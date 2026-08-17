@@ -1,14 +1,17 @@
 # DOOM music support
 
-This component contains two vendored upstream libraries:
+This component contains three vendored upstream libraries:
 
 - LittleMUS, commit `c551f1fba021343bc54f06381d828d022461f223`
   (MIT, see `LICENSE.LittleMUS`)
 - Woody-OPL, commit `c3f6674e4394fd9a83fe52722cfc63e1a9a8e29c`
   (LGPL-2.1-or-later, see `LICENSE.Woody-OPL`)
+- Nuked OPL3 (LGPL-2.1-or-later, see `LICENSE.Nuked-OPL3`)
 
 LittleMUS converts the WAD's MUS event stream and GENMIDI instrument bank to
 OPL register writes. Woody-OPL turns those writes into PCM samples.
+Nuked OPL3 is retained as an alternative for experimentation but is not
+compiled by the current `CMakeLists.txt`.
 
 Local changes:
 

@@ -1,71 +1,38 @@
-# DOOM sur JC3248W535
+# ESP32 firmware
 
-Port expérimental de LinuxDoom 1.10 pour la carte tout-en-un GUITION
-JC3248W535 : ESP32-S3-WROOM-1 N16R8, écran tactile capacitif AXS15231B QSPI
-320 x 480, 16 Mio de flash et 8 Mio de PSRAM.
+This directory is the PlatformIO/ESP-IDF project for the GUITION
+JC3248W535 target. Start with the repository's [main README](../README.md)
+for microSD preparation, flashing, controls, and legal information.
 
-## Préparer la carte microSD
+## Commands
 
-Formater une carte microSD en FAT32 et placer à sa racine un WAD légalement
-obtenu. Le firmware reconnaît, dans cet ordre :
-
-- `doom2f.wad`
-- `doom2.wad`
-- `plutonia.wad`
-- `tnt.wad`
-- `doomu.wad`
-- `doom.wad`
-- `doom1.wad`
-
-Le fichier de configuration est créé sous `/default.cfg`. Le WAD n'est pas
-copié en PSRAM : ses lumps sont lus à la demande depuis `/sdcard`, puis mis en
-cache par le gestionnaire mémoire de DOOM.
-
-## Compiler et flasher
-
-Depuis ce dossier :
+Run from this directory:
 
 ```sh
-platformio run -e jc3248w535
-platformio run -e jc3248w535 -t upload
-platformio device monitor -b 115200
+pio run
+pio run -t upload
+pio device monitor --baud 115200
 ```
 
-À chaque démarrage, le moniteur série affiche le contenu de la racine de la
-microSD. Ouvrir le moniteur puis appuyer sur le bouton Reset de la carte pour
-relancer cette liste. La carte n'est pas exposée comme stockage USB : l'ajout
-de fichiers nécessite encore un lecteur microSD externe.
+Or from the repository root:
 
-Une erreur `ESP_ERR_TIMEOUT` pendant `sdmmc_card_init` signifie que la carte ne
-répond pas encore au bus (carte absente, mal insérée ou liaison incorrecte) :
-elle survient avant la lecture du système de fichiers et du WAD. Une carte qui
-répond mais qui n'est pas en FAT32 produit une erreur de montage différente.
+```sh
+pio run -d ESP32
+pio run -d ESP32 -t upload
+```
 
-Le manifeste `src/idf_component.yml` récupère le pilote Espressif officiel
-`esp_lcd_axs15231b` lors de la première compilation.
+The only current environment is `jc3248w535`. It pins the Espressif Platform
+version used by the tested build and selects the custom 4 MiB application
+partition.
 
-## Commandes tactiles provisoires
+## Source boundaries
 
-L'écran est utilisé en paysage, avec l'image 320 x 200 centrée dans la dalle
-480 x 320.
+- `src/i_*.c`: implementations of DOOM's historical platform interfaces.
+- `src/platform/`: board services, hardware definition, touch decoding, and
+  the custom control panel.
+- `components/doom/`: compiles `../linuxdoom-1.10` while excluding the
+  original PC `i_*` backends.
+- `components/doom_music/`: vendored MUS parser and OPL emulators.
 
-- Moitié gauche : pavé directionnel relatif au centre de la zone.
-- Tiers supérieur droit : tirer ; ce bouton valide aussi les menus.
-- Tiers central droit : utiliser une porte ou un interrupteur.
-- Tiers inférieur droit : ouvrir ou fermer le menu.
-
-Le contrôleur AXS15231B est actuellement exploité avec un seul point : il
-n'est donc pas encore possible de se déplacer et tirer simultanément. Les
-zones et l'orientation devront être validées sur la carte réelle.
-
-## État du port
-
-- Écran QSPI 40 MHz et double tampon DMA par bandes de 16 lignes.
-- PSRAM octale 80 MHz ; zone mémoire DOOM de 6 Mio en PSRAM.
-- Carte microSD sur un bus SPI séparé (`CS 10`, `MOSI 11`, `CLK 12`,
-  `MISO 13`).
-- Jeu solo uniquement.
-- Son et musique non implémentés pour le moment.
-
-Le dossier `components/doom` compile les sources originales situées dans
-`../linuxdoom-1.10` en excluant les implémentations PC des fichiers `i_*`.
+See [Architecture](../docs/ARCHITECTURE.md) for the full data flow and
+[Hardware](../docs/HARDWARE.md) for the tested pin map.

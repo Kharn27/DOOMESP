@@ -1,0 +1,12 @@
+# Never commit proprietary DOOM game data or runtime saves/configuration.
+*.wad
+*.WAD
+*.dsg
+default.cfg
+
+# Host/editor noise outside the PlatformIO project-local ignore file.
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+

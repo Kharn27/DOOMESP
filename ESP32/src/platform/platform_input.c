@@ -15,14 +15,10 @@
 
 #include "doomdef.h"
 #include "platform_audio.h"
+#include "platform_board.h"
 #include "platform_controls.h"
 #include "platform_lcd.h"
 
-#define TOUCH_I2C_PORT I2C_NUM_0
-#define TOUCH_GPIO_SDA 4
-#define TOUCH_GPIO_SCL 8
-#define TOUCH_GPIO_INT 3
-#define TOUCH_I2C_HZ 400000
 #define TOUCH_MAX_POINTS 2
 #define TOUCH_ID_COUNT 16
 #define TOUCH_POINT_RECORD_BYTES 6
@@ -768,9 +764,9 @@ void platform_input_set_weapon_state(uint16_t owned_mask,
 void platform_input_init(void)
 {
     const i2c_master_bus_config_t bus_config = {
-        .i2c_port = TOUCH_I2C_PORT,
-        .sda_io_num = TOUCH_GPIO_SDA,
-        .scl_io_num = TOUCH_GPIO_SCL,
+        .i2c_port = PLATFORM_TOUCH_I2C_PORT,
+        .sda_io_num = PLATFORM_TOUCH_GPIO_SDA,
+        .scl_io_num = PLATFORM_TOUCH_GPIO_SCL,
         .clk_source = I2C_CLK_SRC_DEFAULT,
         .glitch_ignore_cnt = 7,
         .flags = {
@@ -781,7 +777,7 @@ void platform_input_init(void)
 
     esp_lcd_panel_io_i2c_config_t io_config =
         ESP_LCD_TOUCH_IO_I2C_AXS15231B_CONFIG();
-    io_config.scl_speed_hz = TOUCH_I2C_HZ;
+    io_config.scl_speed_hz = PLATFORM_TOUCH_I2C_HZ;
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c(touch_i2c_bus, &io_config, &touch_io));
 
     memset(&previous_state, 0, sizeof(previous_state));
@@ -805,7 +801,7 @@ void platform_input_init(void)
     }
 
     const gpio_config_t interrupt_config = {
-        .pin_bit_mask = 1ULL << TOUCH_GPIO_INT,
+        .pin_bit_mask = 1ULL << PLATFORM_TOUCH_GPIO_INTERRUPT,
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -818,7 +814,7 @@ void platform_input_init(void)
     {
         ESP_ERROR_CHECK(err);
     }
-    ESP_ERROR_CHECK(gpio_isr_handler_add(TOUCH_GPIO_INT,
+    ESP_ERROR_CHECK(gpio_isr_handler_add(PLATFORM_TOUCH_GPIO_INTERRUPT,
                                          touch_interrupt_handler, NULL));
 
     ESP_LOGI(TAG,

@@ -1,0 +1,12 @@
+# Keep the historical id Software source blobs untouched. Normalize files
+# maintained by this port so documentation and build metadata stay portable.
+/README.md text eol=lf
+/README.fr.md text eol=lf
+/CHANGELOG.md text eol=lf
+/CONTRIBUTING.md text eol=lf
+/THIRD_PARTY.md text eol=lf
+/docs/** text eol=lf
+/ESP32/** text eol=lf
+*.jpg binary
+*.mp4 binary
+

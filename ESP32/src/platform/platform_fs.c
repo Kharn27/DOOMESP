@@ -1,4 +1,5 @@
 #include "platform_fs.h"
+#include "platform_board.h"
 
 #include <dirent.h>
 #include <stdbool.h>
@@ -15,21 +16,16 @@
 #include "esp_vfs_fat.h"
 
 #define SD_MOUNT_POINT "/sdcard"
-#define SD_SPI_HOST SPI3_HOST
-#define SD_GPIO_CS 10
-#define SD_GPIO_MOSI 11
-#define SD_GPIO_CLK 12
-#define SD_GPIO_MISO 13
 
 static const char *TAG = "platform_fs";
 
 static void log_sd_idle_levels(void)
 {
     const gpio_config_t input_config = {
-        .pin_bit_mask = (1ULL << SD_GPIO_CS) |
-                        (1ULL << SD_GPIO_MOSI) |
-                        (1ULL << SD_GPIO_CLK) |
-                        (1ULL << SD_GPIO_MISO),
+        .pin_bit_mask = (1ULL << PLATFORM_SD_GPIO_CS) |
+                        (1ULL << PLATFORM_SD_GPIO_MOSI) |
+                        (1ULL << PLATFORM_SD_GPIO_CLK) |
+                        (1ULL << PLATFORM_SD_GPIO_MISO),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -46,19 +42,19 @@ static void log_sd_idle_levels(void)
 
     esp_rom_delay_us(100);
     ESP_LOGI(TAG, "SD idle levels (external pulls only): CS=%d MOSI=%d CLK=%d MISO=%d",
-             gpio_get_level(SD_GPIO_CS),
-             gpio_get_level(SD_GPIO_MOSI),
-             gpio_get_level(SD_GPIO_CLK),
-             gpio_get_level(SD_GPIO_MISO));
+             gpio_get_level(PLATFORM_SD_GPIO_CS),
+             gpio_get_level(PLATFORM_SD_GPIO_MOSI),
+             gpio_get_level(PLATFORM_SD_GPIO_CLK),
+             gpio_get_level(PLATFORM_SD_GPIO_MISO));
 }
 
 static esp_err_t enable_sd_internal_pullups(void)
 {
     const gpio_num_t pins[] = {
-        SD_GPIO_CS,
-        SD_GPIO_MOSI,
-        SD_GPIO_CLK,
-        SD_GPIO_MISO,
+        PLATFORM_SD_GPIO_CS,
+        PLATFORM_SD_GPIO_MOSI,
+        PLATFORM_SD_GPIO_CLK,
+        PLATFORM_SD_GPIO_MISO,
     };
 
     for (size_t i = 0; i < sizeof(pins) / sizeof(pins[0]); ++i)
@@ -161,18 +157,20 @@ int platform_fs_close(int fd)
 bool platform_fs_init(void)
 {
     ESP_LOGI(TAG, "Initializing microSD over SPI3: CS=%d MOSI=%d CLK=%d MISO=%d",
-             SD_GPIO_CS, SD_GPIO_MOSI, SD_GPIO_CLK, SD_GPIO_MISO);
+             PLATFORM_SD_GPIO_CS, PLATFORM_SD_GPIO_MOSI,
+             PLATFORM_SD_GPIO_CLK, PLATFORM_SD_GPIO_MISO);
     log_sd_idle_levels();
 
     const spi_bus_config_t bus_config = {
-        .mosi_io_num = SD_GPIO_MOSI,
-        .miso_io_num = SD_GPIO_MISO,
-        .sclk_io_num = SD_GPIO_CLK,
+        .mosi_io_num = PLATFORM_SD_GPIO_MOSI,
+        .miso_io_num = PLATFORM_SD_GPIO_MISO,
+        .sclk_io_num = PLATFORM_SD_GPIO_CLK,
         .quadwp_io_num = GPIO_NUM_NC,
         .quadhd_io_num = GPIO_NUM_NC,
         .max_transfer_sz = 16 * 1024,
     };
-    esp_err_t err = spi_bus_initialize(SD_SPI_HOST, &bus_config, SPI_DMA_CH_AUTO);
+    esp_err_t err = spi_bus_initialize(PLATFORM_SD_SPI_HOST, &bus_config,
+                                       SPI_DMA_CH_AUTO);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Unable to initialize SD SPI bus: %s", esp_err_to_name(err));
@@ -189,12 +187,12 @@ bool platform_fs_init(void)
     ESP_LOGI(TAG, "Internal pull-ups enabled on the four SD lines");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.slot = SD_SPI_HOST;
-    host.max_freq_khz = 10000;
+    host.slot = PLATFORM_SD_SPI_HOST;
+    host.max_freq_khz = PLATFORM_SD_MAX_FREQUENCY_KHZ;
 
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.host_id = SD_SPI_HOST;
-    slot_config.gpio_cs = SD_GPIO_CS;
+    slot_config.host_id = PLATFORM_SD_SPI_HOST;
+    slot_config.gpio_cs = PLATFORM_SD_GPIO_CS;
 
     const esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = false,

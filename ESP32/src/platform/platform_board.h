@@ -1,0 +1,43 @@
+#ifndef PLATFORM_BOARD_H
+#define PLATFORM_BOARD_H
+
+// Hardware definition for the tested GUITION JC3248W535 revision.
+// Keep every physical bus and GPIO assignment in this file so a future board
+// port does not have to hunt through the DOOM backends and device drivers.
+#define PLATFORM_BOARD_NAME "GUITION JC3248W535"
+
+// AXS15231B display, QSPI on SPI2.
+#define PLATFORM_LCD_SPI_HOST SPI2_HOST
+#define PLATFORM_LCD_GPIO_CS 45
+#define PLATFORM_LCD_GPIO_CLK 47
+#define PLATFORM_LCD_GPIO_D0 21
+#define PLATFORM_LCD_GPIO_D1 48
+#define PLATFORM_LCD_GPIO_D2 40
+#define PLATFORM_LCD_GPIO_D3 39
+#define PLATFORM_LCD_GPIO_RESET GPIO_NUM_NC
+#define PLATFORM_LCD_GPIO_BACKLIGHT 1
+#define PLATFORM_LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+
+// AXS15231B capacitive touch interface, I2C plus an active-low interrupt.
+#define PLATFORM_TOUCH_I2C_PORT I2C_NUM_0
+#define PLATFORM_TOUCH_GPIO_SDA 4
+#define PLATFORM_TOUCH_GPIO_SCL 8
+#define PLATFORM_TOUCH_GPIO_INTERRUPT 3
+#define PLATFORM_TOUCH_I2C_HZ 400000
+
+// On-board microSD socket, SPI3/SDSPI.
+#define PLATFORM_SD_SPI_HOST SPI3_HOST
+#define PLATFORM_SD_GPIO_CS 10
+#define PLATFORM_SD_GPIO_MOSI 11
+#define PLATFORM_SD_GPIO_CLK 12
+#define PLATFORM_SD_GPIO_MISO 13
+#define PLATFORM_SD_MAX_FREQUENCY_KHZ 10000
+
+// NS4168 mono amplifier, I2S0.
+#define PLATFORM_AUDIO_I2S_PORT I2S_NUM_0
+#define PLATFORM_AUDIO_GPIO_BCLK 42
+#define PLATFORM_AUDIO_GPIO_LRCLK 2
+#define PLATFORM_AUDIO_GPIO_DATA 41
+#define PLATFORM_AUDIO_SAMPLE_RATE 16000
+
+#endif

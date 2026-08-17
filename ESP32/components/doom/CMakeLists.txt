@@ -1,15 +1,19 @@
-file(GLOB DOOM_SOURCES "${CMAKE_CURRENT_LIST_DIR}/../../../linuxdoom-1.10/*.c")
+set(DOOM_SOURCE_DIR
+    "${CMAKE_CURRENT_LIST_DIR}/../../../linuxdoom-1.10"
+)
+
+file(GLOB DOOM_SOURCES CONFIGURE_DEPENDS "${DOOM_SOURCE_DIR}/*.c")
 
 list(REMOVE_ITEM DOOM_SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/../../../linuxdoom-1.10/i_main.c"
-    "${CMAKE_CURRENT_LIST_DIR}/../../../linuxdoom-1.10/i_net.c"
-    "${CMAKE_CURRENT_LIST_DIR}/../../../linuxdoom-1.10/i_sound.c"
-    "${CMAKE_CURRENT_LIST_DIR}/../../../linuxdoom-1.10/i_video.c"
+    "${DOOM_SOURCE_DIR}/i_main.c"
+    "${DOOM_SOURCE_DIR}/i_net.c"
+    "${DOOM_SOURCE_DIR}/i_sound.c"
+    "${DOOM_SOURCE_DIR}/i_video.c"
 )
 
 idf_component_register(
     SRCS ${DOOM_SOURCES}
-    INCLUDE_DIRS "../../../linuxdoom-1.10"
+    INCLUDE_DIRS "${DOOM_SOURCE_DIR}"
     PRIV_REQUIRES esp_common
 )
 

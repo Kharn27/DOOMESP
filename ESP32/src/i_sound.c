@@ -17,16 +17,11 @@
 
 #include "musplayer.h"
 #include "platform_audio.h"
+#include "platform_board.h"
 #include "woody_opl_api.h"
 #include "w_wad.h"
 #include "z_zone.h"
 
-#define AUDIO_I2S_PORT I2S_NUM_0
-#define AUDIO_GPIO_BCLK 42
-#define AUDIO_GPIO_LRCLK 2
-#define AUDIO_GPIO_DATA 41
-
-#define AUDIO_SAMPLE_RATE 16000
 #define AUDIO_FRAMES_PER_BUFFER 256
 #define AUDIO_CHANNEL_COUNT 8
 #define MUSIC_TICK_RATE 140
@@ -203,7 +198,7 @@ static uint32_t playback_step(const cached_sfx_t *sfx, int pitch)
     pitch = clamp_int(pitch, 0, 255);
     double pitch_ratio = pow(2.0, ((double)pitch - 128.0) / 64.0);
     double step = ((double)sfx->sample_rate * pitch_ratio * 65536.0) /
-                  (double)AUDIO_SAMPLE_RATE;
+                  (double)PLATFORM_AUDIO_SAMPLE_RATE;
 
     if (step < 1.0)
         step = 1.0;
@@ -247,9 +242,9 @@ static bool fill_music_buffer(int16_t *output)
     int frame = 0;
     while (frame < AUDIO_FRAMES_PER_BUFFER && music.playing)
     {
-        while (music.tick_phase >= AUDIO_SAMPLE_RATE)
+        while (music.tick_phase >= PLATFORM_AUDIO_SAMPLE_RATE)
         {
-            music.tick_phase -= AUDIO_SAMPLE_RATE;
+            music.tick_phase -= PLATFORM_AUDIO_SAMPLE_RATE;
             if (!musplay_tick(&music.player))
             {
                 music.playing = false;
@@ -259,7 +254,8 @@ static bool fill_music_buffer(int16_t *output)
         if (!music.playing)
             break;
 
-        uint32_t phase_remaining = AUDIO_SAMPLE_RATE - music.tick_phase;
+        uint32_t phase_remaining =
+            PLATFORM_AUDIO_SAMPLE_RATE - music.tick_phase;
         int frames_to_tick =
             (int)((phase_remaining + MUSIC_TICK_RATE - 1) /
                   MUSIC_TICK_RATE);
@@ -360,7 +356,7 @@ static void audio_task(void *argument)
                          (long long)(stats_total_us / stats_buffers),
                          (long long)stats_max_us,
                          AUDIO_FRAMES_PER_BUFFER * 1000000 /
-                             AUDIO_SAMPLE_RATE);
+                             PLATFORM_AUDIO_SAMPLE_RATE);
             }
         }
 
@@ -381,7 +377,8 @@ static void audio_task(void *argument)
 static bool init_i2s(void)
 {
     i2s_chan_config_t channel_config =
-        I2S_CHANNEL_DEFAULT_CONFIG(AUDIO_I2S_PORT, I2S_ROLE_MASTER);
+        I2S_CHANNEL_DEFAULT_CONFIG(PLATFORM_AUDIO_I2S_PORT,
+                                   I2S_ROLE_MASTER);
     channel_config.dma_desc_num = 6;
     channel_config.dma_frame_num = AUDIO_FRAMES_PER_BUFFER;
     channel_config.auto_clear = true;
@@ -395,14 +392,14 @@ static bool init_i2s(void)
     }
 
     i2s_std_config_t standard_config = {
-        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(AUDIO_SAMPLE_RATE),
+        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(PLATFORM_AUDIO_SAMPLE_RATE),
         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(
             I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
         .gpio_cfg = {
             .mclk = I2S_GPIO_UNUSED,
-            .bclk = AUDIO_GPIO_BCLK,
-            .ws = AUDIO_GPIO_LRCLK,
-            .dout = AUDIO_GPIO_DATA,
+            .bclk = PLATFORM_AUDIO_GPIO_BCLK,
+            .ws = PLATFORM_AUDIO_GPIO_LRCLK,
+            .dout = PLATFORM_AUDIO_GPIO_DATA,
             .din = I2S_GPIO_UNUSED,
             .invert_flags = {
                 .mclk_inv = false,
@@ -505,10 +502,10 @@ void I_InitSound(void)
     audio_ready = true;
     ESP_LOGI(TAG,
              "NS4168 ready: %d Hz, BCLK=%d LRCLK=%d DATA=%d",
-             AUDIO_SAMPLE_RATE,
-             AUDIO_GPIO_BCLK,
-             AUDIO_GPIO_LRCLK,
-             AUDIO_GPIO_DATA);
+             PLATFORM_AUDIO_SAMPLE_RATE,
+             PLATFORM_AUDIO_GPIO_BCLK,
+             PLATFORM_AUDIO_GPIO_LRCLK,
+             PLATFORM_AUDIO_GPIO_DATA);
 }
 
 bool platform_audio_toggle_mute(void)
@@ -780,12 +777,12 @@ void I_PlaySong(int handle, int looping)
     }
 
     xSemaphoreTake(mixer_mutex, portMAX_DELAY);
-    woody_opl_init(AUDIO_SAMPLE_RATE);
+    woody_opl_init(PLATFORM_AUDIO_SAMPLE_RATE);
     musplay_volume(&music.player, 100);
     musplay_start(&music.player,
                   (char *)music.registered_song,
                   looping != 0);
-    music.tick_phase = AUDIO_SAMPLE_RATE;
+    music.tick_phase = PLATFORM_AUDIO_SAMPLE_RATE;
     music.paused = false;
     music.playing = true;
     xSemaphoreGive(mixer_mutex);

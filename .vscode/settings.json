@@ -1,3 +1,3 @@
 {
-    "cmake.sourceDirectory": "/home/w0rm516n/Workspace/ESP32/DOOMESP/ESP32"
+    "cmake.sourceDirectory": "${workspaceFolder}/ESP32"
 }

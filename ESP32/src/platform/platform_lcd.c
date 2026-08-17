@@ -12,26 +12,15 @@
 #include "esp_log.h"
 
 #include "m_swap.h"
+#include "platform_board.h"
 #include "platform_controls.h"
 #include "r_defs.h"
-
-#define LCD_SPI_HOST SPI2_HOST
 
 #define LCD_NATIVE_H_RES PLATFORM_SCREEN_WIDTH
 #define LCD_NATIVE_V_RES PLATFORM_SCREEN_HEIGHT
 #define LCD_GAME_WIDTH PLATFORM_SCREEN_WIDTH
 #define LCD_GAME_HEIGHT PLATFORM_GAME_HEIGHT
 
-#define LCD_GPIO_CS 45
-#define LCD_GPIO_CLK 47
-#define LCD_GPIO_D0 21
-#define LCD_GPIO_D1 48
-#define LCD_GPIO_D2 40
-#define LCD_GPIO_D3 39
-#define LCD_GPIO_RST GPIO_NUM_NC
-#define LCD_GPIO_BL 1
-
-#define LCD_PCLK_HZ (40 * 1000 * 1000)
 #define LCD_TRANSFER_LINES 20
 #define LCD_TRANSFER_PIXELS (LCD_NATIVE_H_RES * LCD_TRANSFER_LINES)
 #define LCD_TRANSFER_BYTES (LCD_TRANSFER_PIXELS * sizeof(uint16_t))
@@ -1150,19 +1139,20 @@ void platform_lcd_invalidate_weapon_palette(void)
 void platform_lcd_init(void)
 {
     const spi_bus_config_t bus_config =
-        AXS15231B_PANEL_BUS_QSPI_CONFIG(LCD_GPIO_CLK,
-                                       LCD_GPIO_D0,
-                                       LCD_GPIO_D1,
-                                       LCD_GPIO_D2,
-                                       LCD_GPIO_D3,
+        AXS15231B_PANEL_BUS_QSPI_CONFIG(PLATFORM_LCD_GPIO_CLK,
+                                       PLATFORM_LCD_GPIO_D0,
+                                       PLATFORM_LCD_GPIO_D1,
+                                       PLATFORM_LCD_GPIO_D2,
+                                       PLATFORM_LCD_GPIO_D3,
                                        LCD_TRANSFER_BYTES);
-    ESP_ERROR_CHECK(spi_bus_initialize(LCD_SPI_HOST, &bus_config, SPI_DMA_CH_AUTO));
+    ESP_ERROR_CHECK(spi_bus_initialize(PLATFORM_LCD_SPI_HOST, &bus_config,
+                                       SPI_DMA_CH_AUTO));
 
     const esp_lcd_panel_io_spi_config_t io_config = {
-        .cs_gpio_num = LCD_GPIO_CS,
+        .cs_gpio_num = PLATFORM_LCD_GPIO_CS,
         .dc_gpio_num = GPIO_NUM_NC,
         .spi_mode = 3,
-        .pclk_hz = LCD_PCLK_HZ,
+        .pclk_hz = PLATFORM_LCD_PIXEL_CLOCK_HZ,
         .trans_queue_depth = 1,
         .lcd_cmd_bits = 32,
         .lcd_param_bits = 8,
@@ -1170,8 +1160,9 @@ void platform_lcd_init(void)
             .quad_mode = true,
         },
     };
-    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST,
-                                             &io_config, &lcd_io));
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi(
+        (esp_lcd_spi_bus_handle_t)PLATFORM_LCD_SPI_HOST,
+        &io_config, &lcd_io));
 
     const axs15231b_vendor_config_t vendor_config = {
         .init_cmds = jc3248w535_init_commands,
@@ -1182,7 +1173,7 @@ void platform_lcd_init(void)
         },
     };
     const esp_lcd_panel_dev_config_t panel_config = {
-        .reset_gpio_num = LCD_GPIO_RST,
+        .reset_gpio_num = PLATFORM_LCD_GPIO_RESET,
         .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
         .data_endian = LCD_RGB_DATA_ENDIAN_BIG,
         .bits_per_pixel = 16,
@@ -1212,14 +1203,14 @@ void platform_lcd_init(void)
     }
 
     const gpio_config_t backlight_config = {
-        .pin_bit_mask = 1ULL << LCD_GPIO_BL,
+        .pin_bit_mask = 1ULL << PLATFORM_LCD_GPIO_BACKLIGHT,
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE,
     };
     ESP_ERROR_CHECK(gpio_config(&backlight_config));
-    ESP_ERROR_CHECK(gpio_set_level(LCD_GPIO_BL, 0));
+    ESP_ERROR_CHECK(gpio_set_level(PLATFORM_LCD_GPIO_BACKLIGHT, 0));
 
     ESP_ERROR_CHECK(esp_lcd_panel_reset(lcd_panel));
     ESP_ERROR_CHECK(esp_lcd_panel_init(lcd_panel));
@@ -1250,7 +1241,7 @@ void platform_lcd_init(void)
     // current esp_lcd API names this argument "on_off", so compensate here.
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(lcd_panel, false));
 
-    ESP_ERROR_CHECK(gpio_set_level(LCD_GPIO_BL, 1));
+    ESP_ERROR_CHECK(gpio_set_level(PLATFORM_LCD_GPIO_BACKLIGHT, 1));
     ESP_LOGI(TAG, "JC3248W535 LCD ready (%dx%d portrait, game %dx%d)",
              LCD_NATIVE_H_RES, LCD_NATIVE_V_RES,
              LCD_GAME_WIDTH, LCD_GAME_HEIGHT);
