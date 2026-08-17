@@ -50,6 +50,14 @@ void I_WaitVBL(int count);
 
 void I_ReadScreen (byte* scr);
 
+#ifdef DOOM_ESP32
+// Render the original 320x32 status bar into a persistent off-screen target.
+// The ESP32 display backend can then place it outside the 320x200 game view.
+void I_BeginDetachedStatusBar (void);
+void I_EndDetachedStatusBar (void);
+void I_HideDetachedStatusBar (void);
+#endif
+
 void I_BeginRead (void);
 void I_EndRead (void);
 

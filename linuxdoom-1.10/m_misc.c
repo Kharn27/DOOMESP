@@ -276,7 +276,11 @@ default_t	defaults[] =
     {"joyb_use",&joybuse,3},
     {"joyb_speed",&joybspeed,2},
 
+#ifdef DOOM_ESP32
+    {"screenblocks",&screenblocks, 11},
+#else
     {"screenblocks",&screenblocks, 9},
+#endif
     {"detaillevel",&detailLevel, 0},
 
     {"snd_channels",&numChannels, 3},
@@ -400,6 +404,12 @@ void M_LoadDefaults (void)
 		
 	fclose (f);
     }
+
+#ifdef DOOM_ESP32
+    // The handheld has a dedicated physical area for the detached status bar,
+    // so ignore an older desktop-sized value still stored on the SD card.
+    screenblocks = 11;
+#endif
 }
 
 

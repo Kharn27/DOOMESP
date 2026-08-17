@@ -211,6 +211,11 @@ void D_Display (void)
 	return;                    // for comparative timing / profiling
 		
     redrawsbar = false;
+
+#ifdef DOOM_ESP32
+    if (gamestate != GS_LEVEL || !gametic)
+	I_HideDetachedStatusBar ();
+#endif
     
     // change the view size if needed
     if (setsizeneeded)
@@ -244,7 +249,25 @@ void D_Display (void)
 	    redrawsbar = true;
 	if (inhelpscreensstate && !inhelpscreens)
 	    redrawsbar = true;              // just put away the help screen
+#ifdef DOOM_ESP32
+	if (viewheight == SCREENHEIGHT)
+	{
+	    // Keep the 3-D view genuinely 320x200, but ask DOOM's original
+	    // status-bar renderer to draw into a persistent off-screen buffer.
+	    // A full refresh is needed whenever we switch drawing targets because
+	    // the widget library otherwise assumes its old pixels are still there.
+	    I_BeginDetachedStatusBar ();
+	    ST_Drawer (false, redrawsbar || !fullscreen);
+	    I_EndDetachedStatusBar ();
+	}
+	else
+	{
+	    I_HideDetachedStatusBar ();
+	    ST_Drawer (false, redrawsbar);
+	}
+#else
 	ST_Drawer (viewheight == 200, redrawsbar );
+#endif
 	fullscreen = viewheight == 200;
 	break;
 
