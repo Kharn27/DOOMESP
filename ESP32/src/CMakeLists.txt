@@ -1,0 +1,27 @@
+idf_component_register(
+    SRCS
+        "app_main.c"
+        "i_net.c"
+        "i_sound.c"
+        "i_video.c"
+        "platform/platform_fs.c"
+        "platform/platform_input.c"
+        "platform/platform_lcd.c"
+        "platform/platform_time.c"
+    INCLUDE_DIRS
+        "."
+        "platform"
+    REQUIRES
+        doom
+        doom_music
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_driver_i2s
+        esp_driver_sdspi
+        esp_driver_spi
+        esp_lcd
+        esp_lcd_axs15231b
+        esp_psram
+        fatfs
+        heap
+)
