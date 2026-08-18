@@ -388,6 +388,9 @@ static void send_event(event_t event)
 
 static void queue_state_changes(touch_control_state_t state)
 {
+    platform_lcd_set_run_mode(
+        (state.buttons & JOYSTICK_BUTTON_SPEED) != 0);
+
     if (state.escape != previous_state.escape)
     {
         send_event((event_t){
@@ -818,6 +821,11 @@ void platform_input_set_weapon_state(uint16_t owned_mask,
     available_weapon_mask = available_mask;
     weapon_selector_enabled = selector_enabled;
 
+    if (!selector_enabled)
+    {
+        platform_lcd_set_run_mode(false);
+    }
+
     if (!selector_enabled &&
         platform_lcd_get_ui_mode() != PLATFORM_UI_NORMAL)
     {
@@ -849,6 +857,7 @@ void platform_input_init(void)
     suppress_until_all_contacts_up = false;
     strafe_mode = false;
     platform_lcd_set_strafe_mode(false);
+    platform_lcd_set_run_mode(false);
     touch_event_queue = xQueueCreate(TOUCH_EVENT_QUEUE_LENGTH, sizeof(event_t));
     weapon_request_queue = xQueueCreate(2, sizeof(int));
     if (!touch_event_queue || !weapon_request_queue)

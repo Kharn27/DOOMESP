@@ -23,6 +23,7 @@ void platform_lcd_present_rgb565(const uint16_t *framebuffer,
 void platform_lcd_init(void);
 void platform_lcd_set_sound_muted(bool muted);
 void platform_lcd_set_strafe_mode(bool enabled);
+void platform_lcd_set_run_mode(bool enabled);
 void platform_lcd_set_ui_mode(platform_ui_mode_t mode);
 platform_ui_mode_t platform_lcd_get_ui_mode(void);
 void platform_lcd_set_weapon_assets(const void *const *patches,

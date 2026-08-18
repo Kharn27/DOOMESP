@@ -36,6 +36,7 @@ static uint16_t *controls_frame;
 static volatile bool sound_muted;
 static volatile bool sound_button_dirty;
 static volatile bool strafe_mode;
+static volatile bool run_mode;
 static volatile platform_ui_mode_t ui_mode = PLATFORM_UI_NORMAL;
 static volatile bool panel_dirty;
 static const void *weapon_patches[PLATFORM_WEAPON_COUNT];
@@ -721,9 +722,15 @@ static void render_static_strip(uint16_t *strip, int strip_y, bool muted)
     const uint16_t control_shadow = rgb565_be(2, 4, 4);
     const uint16_t control_accent = rgb565_be(60, 78, 50);
     const uint16_t control_accent_high = rgb565_be(103, 119, 77);
-    const uint16_t run_edge = rgb565_be(104, 46, 17);
-    const uint16_t run = rgb565_be(166, 75, 23);
-    const uint16_t run_highlight = rgb565_be(229, 139, 48);
+    const uint16_t run_edge = run_mode
+                                  ? rgb565_be(38, 105, 35)
+                                  : rgb565_be(25, 43, 23);
+    const uint16_t run = run_mode
+                             ? rgb565_be(80, 190, 68)
+                             : rgb565_be(38, 62, 31);
+    const uint16_t run_highlight = run_mode
+                                       ? rgb565_be(199, 245, 126)
+                                       : rgb565_be(88, 105, 65);
     const uint16_t fire_edge = rgb565_be(106, 27, 23);
     const uint16_t fire = rgb565_be(174, 38, 29);
     const uint16_t fire_highlight = rgb565_be(231, 83, 55);
@@ -778,11 +785,9 @@ static void render_static_strip(uint16_t *strip, int strip_y, bool muted)
     fill_circle(strip, strip_y, pad_x, pad_y,
                 PLATFORM_JOYSTICK_RADIUS - 4, run);
     fill_circle(strip, strip_y, pad_x, pad_y,
-                PLATFORM_JOYSTICK_RUN_ENTER_RADIUS - 2, control_edge);
+                PLATFORM_JOYSTICK_RUN_ENTER_RADIUS + 2, control_edge);
     fill_circle(strip, strip_y, pad_x, pad_y,
-                PLATFORM_JOYSTICK_RUN_ENTER_RADIUS - 5, control_dark);
-    fill_circle(strip, strip_y, pad_x, pad_y,
-                PLATFORM_JOYSTICK_RUN_EXIT_RADIUS, control_accent);
+                PLATFORM_JOYSTICK_RUN_ENTER_RADIUS, control_accent);
 
     // Direction chevrons.
     const draw_point_t arrow_up[] = {
@@ -806,7 +811,8 @@ static void render_static_strip(uint16_t *strip, int strip_y, bool muted)
     fill_convex_polygon(strip, strip_y, arrow_left, 3, control_accent_high);
     fill_convex_polygon(strip, strip_y, arrow_right, 3, control_accent_high);
 
-    draw_text_centered(strip, strip_y, pad_x, pad_y + 57,
+    draw_text_centered(strip, strip_y, pad_x,
+                       pad_y + PLATFORM_JOYSTICK_RADIUS - 14,
                        "RUN", 1, run_highlight);
 
     // Static spherical stick cap. Keeping it centred avoids LCD traffic while
@@ -1063,6 +1069,18 @@ void platform_lcd_set_strafe_mode(bool enabled)
     {
         strafe_mode = enabled;
         panel_dirty = true;
+    }
+}
+
+void platform_lcd_set_run_mode(bool enabled)
+{
+    if (run_mode != enabled)
+    {
+        run_mode = enabled;
+        if (ui_mode == PLATFORM_UI_NORMAL)
+        {
+            panel_dirty = true;
+        }
     }
 }
 
