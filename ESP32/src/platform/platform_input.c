@@ -27,6 +27,7 @@
 #define PAD_REPEAT_DELAY_MS 350
 #define PAD_REPEAT_PERIOD_MS 120
 #define JOYSTICK_BUTTON_STRAFE 2
+#define JOYSTICK_BUTTON_SPEED 4
 
 typedef enum
 {
@@ -69,6 +70,7 @@ typedef struct
 typedef struct
 {
     bool active;
+    bool running;
     touch_control_t control;
     uint16_t x;
     uint16_t y;
@@ -217,6 +219,14 @@ static touch_control_t cheat_selector_control_at(uint16_t x, uint16_t y)
     return (touch_control_t)(TOUCH_CONTROL_CHEAT_0 + cheat);
 }
 
+static bool point_in_touch_circle(uint16_t x, uint16_t y,
+                                  int center_x, int center_y, int radius)
+{
+    const int dx = (int)x - center_x;
+    const int dy = (int)y - center_y;
+    return dx * dx + dy * dy <= radius * radius;
+}
+
 static touch_control_t control_at(uint16_t x, uint16_t y)
 {
     if (x >= PLATFORM_SCREEN_WIDTH || y >= PLATFORM_SCREEN_HEIGHT ||
@@ -255,47 +265,73 @@ static touch_control_t control_at(uint16_t x, uint16_t y)
         return TOUCH_CONTROL_MENU;
     }
 
-    const int sound_dx = (int)x - PLATFORM_SOUND_CENTER_X;
-    const int sound_dy = (int)y - PLATFORM_SOUND_CENTER_Y;
-    if (sound_dx * sound_dx + sound_dy * sound_dy <=
-        PLATFORM_SOUND_TOUCH_RADIUS * PLATFORM_SOUND_TOUCH_RADIUS)
-    {
-        return TOUCH_CONTROL_SOUND;
-    }
-    if (x < PLATFORM_JOYSTICK_RIGHT)
+    if (point_in_touch_circle(x, y,
+                              PLATFORM_JOYSTICK_CENTER_X,
+                              PLATFORM_JOYSTICK_CENTER_Y,
+                              PLATFORM_JOYSTICK_TOUCH_RADIUS))
     {
         return TOUCH_CONTROL_PAD;
     }
-    if (y < PLATFORM_FIRE_BOTTOM)
+    if (point_in_touch_circle(x, y,
+                              PLATFORM_FIRE_CENTER_X,
+                              PLATFORM_FIRE_CENTER_Y,
+                              PLATFORM_FIRE_TOUCH_RADIUS))
     {
         return TOUCH_CONTROL_FIRE;
     }
-    if (y < PLATFORM_USE_BOTTOM)
+    if (point_in_touch_circle(x, y,
+                              PLATFORM_USE_CENTER_X,
+                              PLATFORM_USE_CENTER_Y,
+                              PLATFORM_USE_TOUCH_RADIUS))
     {
-        return x < PLATFORM_USE_STRAFE_SPLIT_X
-                   ? TOUCH_CONTROL_USE
-                   : TOUCH_CONTROL_STRAFE;
+        return TOUCH_CONTROL_USE;
     }
-    return TOUCH_CONTROL_MENU;
+    if (point_in_touch_circle(x, y,
+                              PLATFORM_STRAFE_CENTER_X,
+                              PLATFORM_STRAFE_CENTER_Y,
+                              PLATFORM_STRAFE_TOUCH_RADIUS))
+    {
+        return TOUCH_CONTROL_STRAFE;
+    }
+    return TOUCH_CONTROL_NONE;
 }
 
-static touch_control_state_t controls_from_touch(uint16_t x, uint16_t y,
-                                                  touch_control_t control)
+static touch_control_state_t controls_from_touch(
+    const touch_contact_t *contact)
 {
     touch_control_state_t state = {0};
+    const touch_control_t control = contact->control;
 
     if (control == TOUCH_CONTROL_PAD)
     {
-        const int dx = (int)x - PLATFORM_JOYSTICK_CENTER_X;
-        const int dy = (int)y - PLATFORM_JOYSTICK_CENTER_Y;
+        const int dx = (int)contact->x - PLATFORM_JOYSTICK_CENTER_X;
+        const int dy = (int)contact->y - PLATFORM_JOYSTICK_CENTER_Y;
+        const int absolute_x = abs(dx);
+        const int absolute_y = abs(dy);
+        const int distance_squared = dx * dx + dy * dy;
+        const int dead_zone_squared = PLATFORM_JOYSTICK_DEAD_ZONE *
+                                      PLATFORM_JOYSTICK_DEAD_ZONE;
 
-        if (abs(dx) > PLATFORM_JOYSTICK_DEAD_ZONE)
+        if (distance_squared > dead_zone_squared)
         {
-            state.x = dx < 0 ? -1 : 1;
-        }
-        if (abs(dy) > PLATFORM_JOYSTICK_DEAD_ZONE)
-        {
-            state.y = dy < 0 ? -1 : 1;
+            // Quantize the circular pad into eight equal-feeling sectors.
+            // The 2/5 ratio approximates tan(22.5 degrees) without floating
+            // point or trigonometry in the touch task.
+            if (absolute_x * 5 >= absolute_y * 2)
+            {
+                state.x = dx < 0 ? -1 : 1;
+            }
+            if (absolute_y * 5 >= absolute_x * 2)
+            {
+                state.y = dy < 0 ? -1 : 1;
+            }
+
+            // Vanilla DOOM joystick button 2 is its native speed modifier.
+            // It is deliberately suppressed in menus and demos.
+            if (contact->running && weapon_selector_enabled)
+            {
+                state.buttons |= JOYSTICK_BUTTON_SPEED;
+            }
         }
     }
     else if (control == TOUCH_CONTROL_FIRE)
@@ -314,6 +350,30 @@ static touch_control_state_t controls_from_touch(uint16_t x, uint16_t y,
     }
 
     return state;
+}
+
+static void update_pad_run_state(touch_contact_t *contact, uint8_t id)
+{
+    if (contact->control != TOUCH_CONTROL_PAD || !weapon_selector_enabled)
+    {
+        contact->running = false;
+        return;
+    }
+
+    const int dx = (int)contact->x - PLATFORM_JOYSTICK_CENTER_X;
+    const int dy = (int)contact->y - PLATFORM_JOYSTICK_CENTER_Y;
+    const int distance_squared = dx * dx + dy * dy;
+    const int threshold = contact->running
+                              ? PLATFORM_JOYSTICK_RUN_EXIT_RADIUS
+                              : PLATFORM_JOYSTICK_RUN_ENTER_RADIUS;
+    const bool running = distance_squared >= threshold * threshold;
+
+    if (running != contact->running)
+    {
+        contact->running = running;
+        ESP_LOGI(TAG, "Touch id=%u pad speed -> %s",
+                 (unsigned)id, running ? "RUN" : "WALK");
+    }
 }
 
 static void send_event(event_t event)
@@ -532,18 +592,21 @@ static touch_control_state_t combined_touch_state(void)
             continue;
         }
 
-        const touch_control_state_t state =
-            controls_from_touch(contact->x, contact->y, contact->control);
-        combined.buttons |= state.buttons;
-        combined.escape = combined.escape || state.escape;
+        const touch_control_state_t state = controls_from_touch(contact);
 
         // Only one navigation contact is expected. If two fingers start on
         // the pad, keep the lowest stable touch ID instead of oscillating.
         if (contact->control == TOUCH_CONTROL_PAD && !pad_already_combined)
         {
+            combined.buttons |= state.buttons;
             combined.x = state.x;
             combined.y = state.y;
             pad_already_combined = true;
+        }
+        else if (contact->control != TOUCH_CONTROL_PAD)
+        {
+            combined.buttons |= state.buttons;
+            combined.escape = combined.escape || state.escape;
         }
     }
 
@@ -612,6 +675,7 @@ static void process_touch_sample(
 
         contact->x = x;
         contact->y = y;
+        update_pad_run_state(contact, id);
     }
 
     // The controller compacts remaining records when either finger lifts.

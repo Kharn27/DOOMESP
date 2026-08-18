@@ -230,6 +230,33 @@ static void fill_octagon(uint16_t *strip, int strip_y,
                         sizeof(points) / sizeof(points[0]), color);
 }
 
+static void fill_circle(uint16_t *strip, int strip_y,
+                        int center_x, int center_y, int radius,
+                        uint16_t color)
+{
+    const int radius_squared = radius * radius;
+    const int y0 = center_y - radius > strip_y
+                       ? center_y - radius
+                       : strip_y;
+    const int y1 = center_y + radius + 1 < strip_y + LCD_TRANSFER_LINES
+                       ? center_y + radius + 1
+                       : strip_y + LCD_TRANSFER_LINES;
+
+    for (int y = y0; y < y1; ++y)
+    {
+        const int dy = y - center_y;
+        int half_width = radius;
+        while (half_width > 0 &&
+               half_width * half_width + dy * dy > radius_squared)
+        {
+            --half_width;
+        }
+        fill_rectangle(strip, strip_y,
+                       center_x - half_width, y,
+                       half_width * 2 + 1, 1, color);
+    }
+}
+
 static void fill_chamfered_rectangle(uint16_t *strip, int strip_y,
                                      int x, int y, int width, int height,
                                      int corner, uint16_t color)
@@ -694,6 +721,9 @@ static void render_static_strip(uint16_t *strip, int strip_y, bool muted)
     const uint16_t control_shadow = rgb565_be(2, 4, 4);
     const uint16_t control_accent = rgb565_be(60, 78, 50);
     const uint16_t control_accent_high = rgb565_be(103, 119, 77);
+    const uint16_t run_edge = rgb565_be(104, 46, 17);
+    const uint16_t run = rgb565_be(166, 75, 23);
+    const uint16_t run_highlight = rgb565_be(229, 139, 48);
     const uint16_t fire_edge = rgb565_be(106, 27, 23);
     const uint16_t fire = rgb565_be(174, 38, 29);
     const uint16_t fire_highlight = rgb565_be(231, 83, 55);
@@ -734,137 +764,114 @@ static void render_static_strip(uint16_t *strip, int strip_y, bool muted)
     draw_text(strip, strip_y, 143, 237, "UAC", 1, label);
     draw_text(strip, strip_y, 230, 239, "ACTION", 1, label);
 
-    // Direction-pad backplate and touch origin share these constants. Moving
-    // the artwork therefore cannot silently desynchronise the controls.
+    // Circular joystick: the green inner well is WALK and the amber outer
+    // annulus is RUN. The artwork remains static so touch motion never forces
+    // an expensive lower-panel redraw on this sequential-write LCD.
     const int pad_x = PLATFORM_JOYSTICK_CENTER_X;
     const int pad_y = PLATFORM_JOYSTICK_CENTER_Y;
-    fill_octagon(strip, strip_y,
-                 pad_x, pad_y + 3,
-                 74, 21, control_shadow);
-    fill_octagon(strip, strip_y,
-                 pad_x, pad_y,
-                 74, 21, panel_edge);
-    fill_octagon(strip, strip_y,
-                 pad_x, pad_y,
-                 70, 19, control_dark);
-
-    const draw_point_t up_outer[] = {
-        {pad_x - 18, pad_y - 10}, {pad_x - 18, pad_y - 45},
-        {pad_x - 8, pad_y - 62}, {pad_x + 8, pad_y - 62},
-        {pad_x + 18, pad_y - 45}, {pad_x + 18, pad_y - 10},
-        {pad_x + 10, pad_y - 3}, {pad_x - 10, pad_y - 3},
-    };
-    const draw_point_t up_inner[] = {
-        {pad_x - 13, pad_y - 13}, {pad_x - 13, pad_y - 42},
-        {pad_x - 5, pad_y - 55}, {pad_x + 5, pad_y - 55},
-        {pad_x + 13, pad_y - 42}, {pad_x + 13, pad_y - 13},
-        {pad_x + 7, pad_y - 8}, {pad_x - 7, pad_y - 8},
-    };
-    const draw_point_t down_outer[] = {
-        {pad_x - 10, pad_y + 3}, {pad_x + 10, pad_y + 3},
-        {pad_x + 18, pad_y + 10}, {pad_x + 18, pad_y + 45},
-        {pad_x + 8, pad_y + 62}, {pad_x - 8, pad_y + 62},
-        {pad_x - 18, pad_y + 45}, {pad_x - 18, pad_y + 10},
-    };
-    const draw_point_t down_inner[] = {
-        {pad_x - 7, pad_y + 8}, {pad_x + 7, pad_y + 8},
-        {pad_x + 13, pad_y + 13}, {pad_x + 13, pad_y + 42},
-        {pad_x + 5, pad_y + 55}, {pad_x - 5, pad_y + 55},
-        {pad_x - 13, pad_y + 42}, {pad_x - 13, pad_y + 13},
-    };
-    const draw_point_t left_outer[] = {
-        {pad_x - 10, pad_y - 18}, {pad_x - 3, pad_y - 10},
-        {pad_x - 3, pad_y + 10}, {pad_x - 10, pad_y + 18},
-        {pad_x - 45, pad_y + 18}, {pad_x - 62, pad_y + 8},
-        {pad_x - 62, pad_y - 8}, {pad_x - 45, pad_y - 18},
-    };
-    const draw_point_t left_inner[] = {
-        {pad_x - 13, pad_y - 13}, {pad_x - 8, pad_y - 7},
-        {pad_x - 8, pad_y + 7}, {pad_x - 13, pad_y + 13},
-        {pad_x - 42, pad_y + 13}, {pad_x - 55, pad_y + 5},
-        {pad_x - 55, pad_y - 5}, {pad_x - 42, pad_y - 13},
-    };
-    const draw_point_t right_outer[] = {
-        {pad_x + 10, pad_y - 18}, {pad_x + 45, pad_y - 18},
-        {pad_x + 62, pad_y - 8}, {pad_x + 62, pad_y + 8},
-        {pad_x + 45, pad_y + 18}, {pad_x + 10, pad_y + 18},
-        {pad_x + 3, pad_y + 10}, {pad_x + 3, pad_y - 10},
-    };
-    const draw_point_t right_inner[] = {
-        {pad_x + 13, pad_y - 13}, {pad_x + 42, pad_y - 13},
-        {pad_x + 55, pad_y - 5}, {pad_x + 55, pad_y + 5},
-        {pad_x + 42, pad_y + 13}, {pad_x + 13, pad_y + 13},
-        {pad_x + 8, pad_y + 7}, {pad_x + 8, pad_y - 7},
-    };
-    fill_convex_polygon(strip, strip_y, up_outer, 8, control_edge);
-    fill_convex_polygon(strip, strip_y, up_inner, 8, control_accent);
-    fill_convex_polygon(strip, strip_y, down_outer, 8, control_edge);
-    fill_convex_polygon(strip, strip_y, down_inner, 8, control_accent);
-    fill_convex_polygon(strip, strip_y, left_outer, 8, control_edge);
-    fill_convex_polygon(strip, strip_y, left_inner, 8, control_accent);
-    fill_convex_polygon(strip, strip_y, right_outer, 8, control_edge);
-    fill_convex_polygon(strip, strip_y, right_inner, 8, control_accent);
+    fill_circle(strip, strip_y, pad_x, pad_y + 3,
+                PLATFORM_JOYSTICK_RADIUS + 4, control_shadow);
+    fill_circle(strip, strip_y, pad_x, pad_y,
+                PLATFORM_JOYSTICK_RADIUS + 4, panel_edge);
+    fill_circle(strip, strip_y, pad_x, pad_y,
+                PLATFORM_JOYSTICK_RADIUS, run_edge);
+    fill_circle(strip, strip_y, pad_x, pad_y,
+                PLATFORM_JOYSTICK_RADIUS - 4, run);
+    fill_circle(strip, strip_y, pad_x, pad_y,
+                PLATFORM_JOYSTICK_RUN_ENTER_RADIUS - 2, control_edge);
+    fill_circle(strip, strip_y, pad_x, pad_y,
+                PLATFORM_JOYSTICK_RUN_ENTER_RADIUS - 5, control_dark);
+    fill_circle(strip, strip_y, pad_x, pad_y,
+                PLATFORM_JOYSTICK_RUN_EXIT_RADIUS, control_accent);
 
     // Direction chevrons.
     const draw_point_t arrow_up[] = {
-        {pad_x, pad_y - 49}, {pad_x - 7, pad_y - 38},
-        {pad_x + 7, pad_y - 38},
+        {pad_x, pad_y - 42}, {pad_x - 7, pad_y - 31},
+        {pad_x + 7, pad_y - 31},
     };
     const draw_point_t arrow_down[] = {
-        {pad_x - 7, pad_y + 38}, {pad_x + 7, pad_y + 38},
-        {pad_x, pad_y + 49},
+        {pad_x - 7, pad_y + 31}, {pad_x + 7, pad_y + 31},
+        {pad_x, pad_y + 42},
     };
     const draw_point_t arrow_left[] = {
-        {pad_x - 49, pad_y}, {pad_x - 38, pad_y - 7},
-        {pad_x - 38, pad_y + 7},
+        {pad_x - 42, pad_y}, {pad_x - 31, pad_y - 7},
+        {pad_x - 31, pad_y + 7},
     };
     const draw_point_t arrow_right[] = {
-        {pad_x + 38, pad_y - 7}, {pad_x + 49, pad_y},
-        {pad_x + 38, pad_y + 7},
+        {pad_x + 31, pad_y - 7}, {pad_x + 42, pad_y},
+        {pad_x + 31, pad_y + 7},
     };
     fill_convex_polygon(strip, strip_y, arrow_up, 3, control_accent_high);
     fill_convex_polygon(strip, strip_y, arrow_down, 3, control_accent_high);
     fill_convex_polygon(strip, strip_y, arrow_left, 3, control_accent_high);
     fill_convex_polygon(strip, strip_y, arrow_right, 3, control_accent_high);
 
-    fill_octagon(strip, strip_y,
-                 pad_x, pad_y + 2,
-                 21, 6, control_shadow);
-    fill_octagon(strip, strip_y,
-                 pad_x, pad_y,
-                 21, 6, control_edge);
-    fill_octagon(strip, strip_y,
-                 pad_x, pad_y,
-                 17, 5, control_dark);
-    fill_rectangle(strip, strip_y, pad_x - 6, pad_y - 5,
-                   2, 10, control_accent_high);
-    fill_rectangle(strip, strip_y, pad_x - 1, pad_y - 7,
-                   2, 12, control_accent_high);
-    fill_rectangle(strip, strip_y, pad_x + 4, pad_y - 3,
-                   2, 8, control_accent_high);
+    draw_text_centered(strip, strip_y, pad_x, pad_y + 57,
+                       "RUN", 1, run_highlight);
+
+    // Static spherical stick cap. Keeping it centred avoids LCD traffic while
+    // the finger moves; direction and speed remain entirely touch-driven.
+    fill_circle(strip, strip_y, pad_x, pad_y + 3, 21, control_shadow);
+    fill_circle(strip, strip_y, pad_x, pad_y, 21, control_edge);
+    fill_circle(strip, strip_y, pad_x, pad_y, 17, control_dark);
+    fill_circle(strip, strip_y, pad_x - 4, pad_y - 5, 6,
+                control_accent_high);
 
     // Main action key, visually smaller than the legacy circle while keeping
     // its generous right-hand touch region.
-    fill_octagon(strip, strip_y, 250, 302, 38, 11, control_shadow);
-    fill_octagon(strip, strip_y, 250, 299, 38, 11, fire_edge);
-    fill_octagon(strip, strip_y, 250, 299, 33, 9, fire);
-    fill_rectangle(strip, strip_y, 234, 272, 32, 2, fire_highlight);
-    draw_text(strip, strip_y, 227, 292, "FIRE", 2, text);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_FIRE_CENTER_X, PLATFORM_FIRE_CENTER_Y + 3,
+                 PLATFORM_FIRE_RADIUS, 11, control_shadow);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_FIRE_CENTER_X, PLATFORM_FIRE_CENTER_Y,
+                 PLATFORM_FIRE_RADIUS, 11, fire_edge);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_FIRE_CENTER_X, PLATFORM_FIRE_CENTER_Y,
+                 PLATFORM_FIRE_RADIUS - 5, 9, fire);
+    fill_rectangle(strip, strip_y,
+                   PLATFORM_FIRE_CENTER_X - 16,
+                   PLATFORM_FIRE_CENTER_Y - 27,
+                   32, 2, fire_highlight);
+    draw_text_centered(strip, strip_y,
+                       PLATFORM_FIRE_CENTER_X,
+                       PLATFORM_FIRE_CENTER_Y - 7,
+                       "FIRE", 2, text);
 
-    fill_octagon(strip, strip_y, 226, 400, 29, 8, control_shadow);
-    fill_octagon(strip, strip_y, 226, 397, 29, 8, use_edge);
-    fill_octagon(strip, strip_y, 226, 397, 24, 7, use);
-    fill_rectangle(strip, strip_y, 214, 378, 24, 2, use_highlight);
-    draw_text_centered(strip, strip_y, 226, 390, "USE", 2, text);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_USE_CENTER_X, PLATFORM_USE_CENTER_Y + 3,
+                 PLATFORM_USE_RADIUS, 8, control_shadow);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_USE_CENTER_X, PLATFORM_USE_CENTER_Y,
+                 PLATFORM_USE_RADIUS, 8, use_edge);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_USE_CENTER_X, PLATFORM_USE_CENTER_Y,
+                 PLATFORM_USE_RADIUS - 5, 7, use);
+    fill_rectangle(strip, strip_y,
+                   PLATFORM_USE_CENTER_X - 12,
+                   PLATFORM_USE_CENTER_Y - 19,
+                   24, 2, use_highlight);
+    draw_text_centered(strip, strip_y,
+                       PLATFORM_USE_CENTER_X,
+                       PLATFORM_USE_CENTER_Y - 7,
+                       "USE", 2, text);
 
     // Compact latching strafe key. Its colours invert so the current mode is
     // readable at a glance without consuming the two available touch points.
-    fill_octagon(strip, strip_y, 287, 400, 21, 7, control_shadow);
-    fill_octagon(strip, strip_y, 287, 397, 21, 7,
+    fill_octagon(strip, strip_y,
+                 PLATFORM_STRAFE_CENTER_X, PLATFORM_STRAFE_CENTER_Y + 3,
+                 PLATFORM_STRAFE_RADIUS, 7, control_shadow);
+    fill_octagon(strip, strip_y,
+                 PLATFORM_STRAFE_CENTER_X, PLATFORM_STRAFE_CENTER_Y,
+                 PLATFORM_STRAFE_RADIUS, 7,
                  strafe_mode ? strafe_white : strafe_blue);
-    fill_octagon(strip, strip_y, 287, 397, 17, 5,
+    fill_octagon(strip, strip_y,
+                 PLATFORM_STRAFE_CENTER_X, PLATFORM_STRAFE_CENTER_Y,
+                 PLATFORM_STRAFE_RADIUS - 4, 5,
                  strafe_mode ? strafe_blue : strafe_white);
-    draw_text_centered(strip, strip_y, 287, 394, "STF", 1,
+    draw_text_centered(strip, strip_y,
+                       PLATFORM_STRAFE_CENTER_X,
+                       PLATFORM_STRAFE_CENTER_Y - 3,
+                       "STF", 1,
                        strafe_mode ? strafe_white : strafe_blue);
 
     // Shared utility rail: audio, modal panels, and DOOM's own menu.
