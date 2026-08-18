@@ -1,5 +1,7 @@
 # Troubleshooting
 
+[Version française](TROUBLESHOOTING.fr.md)
+
 Start the serial monitor at 115200 baud and reset the board. The log reports
 flash/PSRAM discovery, LCD initialization, SD status, IWAD selection, memory,
 touch, and audio initialization.
@@ -102,4 +104,3 @@ Copy the complete log from reset through the backtrace. Keep the matching
 `.pio/build/jc3248w535/firmware.elf`; the PlatformIO exception decoder uses it
 to translate addresses into source locations. Never attach commercial WAD
 files to an issue.
-

@@ -1,5 +1,7 @@
 # Hardware
 
+[Version française](HARDWARE.fr.md)
+
 ## Tested target
 
 The working target is the black GUITION board marked **JC3248W535** on its
@@ -16,6 +18,10 @@ PCB. The tested unit reports:
 Do not rely only on the screen size or product photo. Other boards using an
 AXS15231B can route the same devices to different GPIOs and may require a
 different panel initialization sequence.
+
+<p align="center">
+  <img src="media/board-back.jpg" width="420" alt="Back of the tested GUITION board showing the JC3248W535 marking, ESP32-S3 module, and microSD socket">
+</p>
 
 ## Verified pin map
 
@@ -55,7 +61,7 @@ Secure the speaker mechanically: low-frequency weapon sounds can make a loose
 speaker vibrate against the desk or its own leads.
 
 <p align="center">
-  <img src="media/audio-test.jpg" width="360" alt="Development audio test with an external speaker">
+  <img src="media/audio-wiring.jpg" width="360" alt="Test speaker connected to the amplified output of the JC3248W535">
 </p>
 
 The touch speaker icon mutes the final mix. DOOM's own sound and music volume
@@ -84,4 +90,3 @@ or asset partitions without forcing WAD data into flash.
 Use a data-capable USB cable and a supply that remains stable with the LCD
 backlight and speaker active. On Linux the native USB Serial/JTAG interface
 usually appears as `/dev/ttyACM0`; Windows assigns a `COM` port.
-

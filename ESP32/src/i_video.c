@@ -13,7 +13,6 @@
 #include "st_stuff.h"
 #include "v_video.h"
 #include "w_wad.h"
-#include "z_zone.h"
 
 #include "platform/platform_input.h"
 #include "platform/platform_lcd.h"
@@ -24,6 +23,23 @@ static uint16_t rgb565_palette[256];
 static uint16_t rgb565_gray_palette[256];
 static const void *weapon_patches[PLATFORM_WEAPON_COUNT];
 static const void *cheat_patches[PLATFORM_CHEAT_COUNT];
+
+// Selector artwork must outlive DOOM's purgeable WAD cache. Calling
+// W_CacheLumpNum(..., PU_STATIC) is not enough: a later renderer request for
+// the same sprite with PU_CACHE changes the existing block's tag, allowing it
+// to be evicted while the touch UI still holds its address.
+typedef struct
+{
+    int lump;
+    void *data;
+} ui_patch_cache_entry_t;
+
+#define UI_PATCH_CACHE_CAPACITY \
+    (PLATFORM_WEAPON_COUNT + PLATFORM_CHEAT_COUNT)
+
+static ui_patch_cache_entry_t ui_patch_cache[UI_PATCH_CACHE_CAPACITY];
+static int ui_patch_cache_count;
+static size_t ui_patch_cache_bytes;
 static uint16_t weapon_available_mask;
 static byte *detached_status_screen;
 static byte *detached_status_snapshot;
@@ -34,6 +50,53 @@ static bool weapon_assets_ready;
 static const char *TAG = "doom_video";
 
 extern boolean menuactive;
+
+static const void *load_stable_ui_patch(const char *name)
+{
+    const int lump = W_CheckNumForName((char *)name);
+    if (lump < 0)
+    {
+        ESP_LOGW(TAG, "UI patch %s is not present in this IWAD", name);
+        return NULL;
+    }
+
+    for (int entry = 0; entry < ui_patch_cache_count; ++entry)
+    {
+        if (ui_patch_cache[entry].lump == lump)
+        {
+            return ui_patch_cache[entry].data;
+        }
+    }
+
+    if (ui_patch_cache_count >= UI_PATCH_CACHE_CAPACITY)
+    {
+        ESP_LOGE(TAG, "Stable UI patch cache is full");
+        return NULL;
+    }
+
+    const int length = W_LumpLength(lump);
+    if (length <= 0)
+    {
+        ESP_LOGW(TAG, "UI patch %s has an invalid size (%d)", name, length);
+        return NULL;
+    }
+
+    void *data = heap_caps_malloc((size_t)length,
+                                  MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!data)
+    {
+        ESP_LOGE(TAG, "Unable to copy UI patch %s (%d bytes) to PSRAM",
+                 name, length);
+        return NULL;
+    }
+
+    W_ReadLump(lump, data);
+    ui_patch_cache[ui_patch_cache_count].lump = lump;
+    ui_patch_cache[ui_patch_cache_count].data = data;
+    ++ui_patch_cache_count;
+    ui_patch_cache_bytes += (size_t)length;
+    return data;
+}
 
 static void initialize_weapon_assets(void)
 {
@@ -54,10 +117,9 @@ static void initialize_weapon_assets(void)
 
     for (int weapon = 0; weapon < PLATFORM_WEAPON_COUNT; ++weapon)
     {
-        const int lump = W_CheckNumForName((char *)lump_names[weapon]);
-        if (lump >= 0)
+        weapon_patches[weapon] = load_stable_ui_patch(lump_names[weapon]);
+        if (weapon_patches[weapon])
         {
-            weapon_patches[weapon] = W_CacheLumpNum(lump, PU_STATIC);
             weapon_available_mask |= (uint16_t)(1u << weapon);
         }
     }
@@ -68,16 +130,17 @@ static void initialize_weapon_assets(void)
                                    rgb565_gray_palette);
     for (int cheat = 0; cheat < PLATFORM_CHEAT_COUNT; ++cheat)
     {
-        const int lump = W_CheckNumForName((char *)cheat_lump_names[cheat]);
-        if (lump >= 0)
-        {
-            cheat_patches[cheat] = W_CacheLumpNum(lump, PU_STATIC);
-        }
+        cheat_patches[cheat] =
+            load_stable_ui_patch(cheat_lump_names[cheat]);
     }
     platform_lcd_set_cheat_assets(cheat_patches);
     weapon_assets_ready = true;
-    ESP_LOGI(TAG, "Weapon selector assets ready (mask=0x%03x)",
-             (unsigned)weapon_available_mask);
+    ESP_LOGI(TAG,
+             "Selector assets ready (mask=0x%03x, %d unique patches, "
+             "%u PSRAM bytes)",
+             (unsigned)weapon_available_mask,
+             ui_patch_cache_count,
+             (unsigned)ui_patch_cache_bytes);
 }
 
 static void update_weapon_ui_state(void)

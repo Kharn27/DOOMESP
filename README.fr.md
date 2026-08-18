@@ -11,11 +11,17 @@ toujours dynamique, est affiché juste sous l'image et le reste de l'écran
 devient une manette tactile multipoint.
 
 <p align="center">
-  <img src="docs/media/gameplay.jpg" width="300" alt="DOOM sur la JC3248W535 avec les commandes tactiles">
-  <img src="docs/media/weapon-selector.jpg" width="300" alt="Sélecteur tactile des armes utilisant les sprites du WAD">
+  <img src="docs/media/gameplay.jpg" width="300" alt="DOOM sur la JC3248W535 avec les commandes tactiles actuelles">
+  <img src="docs/media/main-menu.jpg" width="300" alt="Menu original de DOOM au-dessus des commandes tactiles de la JC3248W535">
 </p>
 
-[Voir la vidéo de démonstration](docs/media/demo.mp4).
+<p align="center">
+  <img src="docs/media/weapon-selector.jpg" width="300" alt="Sélecteur tactile des armes utilisant les sprites du WAD">
+  <img src="docs/media/cheat-selector.jpg" width="300" alt="Sélecteur tactile des cheats utilisant les sprites du WAD">
+</p>
+
+Voir la [démonstration du gameplay](docs/media/gameplay-demo.mp4) et la vidéo
+des [commandes tactiles et du sélecteur d'armes](docs/media/touch-controls.mp4).
 
 ## Fonctionnalités
 
@@ -40,7 +46,7 @@ Le réseau n'est pas encore implémenté : cette version est uniquement solo.
   Un modèle 8 ohms / 1,5 W a été testé avec succès.
 - Un IWAD compatible obtenu légalement.
 
-Consulte le [guide matériel](docs/HARDWARE.md) pour les bus et GPIO exacts.
+Consulte le [guide matériel](docs/HARDWARE.fr.md) pour les bus et GPIO exacts.
 
 ## Installation rapide
 
@@ -101,13 +107,13 @@ Sous Windows, utiliser le port `COM` correspondant.
 
 ## Pour aller plus loin
 
-- [Architecture du port](docs/ARCHITECTURE.md)
-- [Matériel et brochage](docs/HARDWARE.md)
-- [Dépannage](docs/TROUBLESHOOTING.md)
-- [Différences avec LinuxDOOM](docs/UPSTREAM.md)
-- [Licences tierces](THIRD_PARTY.md)
-- [Contribuer](CONTRIBUTING.md)
+- [Architecture du port](docs/ARCHITECTURE.fr.md)
+- [Matériel et brochage](docs/HARDWARE.fr.md)
+- [Dépannage](docs/TROUBLESHOOTING.fr.md)
+- [Différences avec LinuxDOOM](docs/UPSTREAM.fr.md)
+- [Licences tierces](THIRD_PARTY.fr.md)
+- [Contribuer](CONTRIBUTING.fr.md)
+- [Journal des modifications](CHANGELOG.fr.md)
 
 Le code est distribué sous GNU GPL version 2. Les données commerciales de
 DOOM ne font pas partie de cette licence et ne sont pas incluses.
-

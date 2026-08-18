@@ -1,5 +1,7 @@
 # Third-party software and assets
 
+[Version française](THIRD_PARTY.fr.md)
+
 ## LinuxDOOM 1.10
 
 - Source: [id-Software/DOOM](https://github.com/id-Software/DOOM)
@@ -52,4 +54,3 @@ Photos and videos under `docs/media` were captured during development of this
 port and are not part of the GPL-licensed program source. They contain visual
 output produced from user-supplied DOOM game data. All game names, artwork,
 and trademarks remain the property of their respective owners.
-

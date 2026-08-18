@@ -1,5 +1,7 @@
 # Architecture
 
+[Version française](ARCHITECTURE.fr.md)
+
 DOOMESP keeps the original LinuxDOOM portability boundary: game code calls
 functions whose names start with `I_`, while the target supplies those
 functions. The ESP32 port does not duplicate the renderer or game loop.
@@ -58,6 +60,11 @@ The custom controls occupy the remaining area. A cached lower framebuffer is
 redrawn only when its state changes, such as mute, strafe, weapon ownership,
 or modal selection. All physical LCD writes remain on the game/render task;
 the touch task only changes state and queues events.
+
+Weapon and cheat artwork is copied once from the IWAD into a small dedicated
+PSRAM cache. The UI never retains pointers into DOOM's purgeable lump cache:
+the renderer can therefore retag or evict the same sprites during demos and
+level changes without invalidating selector icons.
 
 ## Input pipeline
 
@@ -124,4 +131,3 @@ Some changes must live in LinuxDOOM because no original `I_*` callback exists
 at the required point, notably detached status-bar rendering. They are kept
 small and generally guarded by `DOOM_ESP32`. See [UPSTREAM.md](UPSTREAM.md)
 for the complete policy and inventory.
-

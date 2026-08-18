@@ -1,5 +1,7 @@
 # Changelog
 
+[Version française](CHANGELOG.fr.md)
+
 This project is still pre-release. Entries describe the current `main` branch
 until the first versioned release is tagged.
 
@@ -17,10 +19,15 @@ until the first versioned release is tagged.
 - Public build, architecture, hardware, troubleshooting, licensing, and
   contribution documentation.
 
+### Fixed
+
+- Weapon and cheat icons no longer disappear after extended demo playback or
+  level changes. Selector artwork now has a stable, deduplicated PSRAM cache
+  independent from DOOM's purgeable WAD cache.
+
 ### Known limitations
 
 - Single-player only; no Wi-Fi or Bluetooth gameplay yet.
 - Only the GUITION board marked `JC3248W535` has been validated.
 - Save-game behavior has not yet been validated as part of the public test
   matrix.
-

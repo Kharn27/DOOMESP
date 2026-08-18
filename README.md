@@ -16,12 +16,18 @@ status bar directly below it, and uses the remaining pixels for a two-point
 touch interface.
 
 <p align="center">
-  <img src="docs/media/gameplay.jpg" width="300" alt="DOOM running on the JC3248W535 with its touch controls">
+  <img src="docs/media/gameplay.jpg" width="300" alt="DOOM gameplay on the JC3248W535 with the current touch controls">
+  <img src="docs/media/main-menu.jpg" width="300" alt="DOOM's original menu above the JC3248W535 touch controls">
+</p>
+
+<p align="center">
   <img src="docs/media/weapon-selector.jpg" width="300" alt="Touch weapon selector using sprites from the loaded WAD">
+  <img src="docs/media/cheat-selector.jpg" width="300" alt="Touch cheat selector using sprites from the loaded WAD">
 </p>
 
 > The footage shows an active development build; small details of the touch
-> layout may continue to evolve. [Watch the demo video](docs/media/demo.mp4).
+> layout may continue to evolve. Watch the [gameplay demo](docs/media/gameplay-demo.mp4)
+> and the [touch controls and weapon selector](docs/media/touch-controls.mp4).
 
 ## What works
 
@@ -161,4 +167,3 @@ license and is not included. You must supply your own legally obtained IWAD.
 
 DOOM is a trademark of its respective owner. This community project is not
 affiliated with or endorsed by id Software, Bethesda, or ZeniMax.
-

@@ -1,5 +1,7 @@
 # Contributing
 
+[Version française](CONTRIBUTING.fr.md)
+
 Issues, hardware validation, documentation improvements, and code changes are
 welcome.
 
@@ -51,4 +53,3 @@ Describe:
 
 Contributions to this GPL-2.0 project must be compatible with the repository's
 license. Retain the licenses and attribution of vendored third-party code.
-

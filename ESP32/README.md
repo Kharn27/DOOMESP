@@ -1,5 +1,7 @@
 # ESP32 firmware
 
+[Version française](README.fr.md)
+
 This directory is the PlatformIO/ESP-IDF project for the GUITION
 JC3248W535 target. Start with the repository's [main README](../README.md)
 for microSD preparation, flashing, controls, and legal information.

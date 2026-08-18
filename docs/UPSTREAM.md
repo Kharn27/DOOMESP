@@ -1,5 +1,7 @@
 # LinuxDOOM upstream and local changes
 
+[Version française](UPSTREAM.fr.md)
+
 ## Provenance
 
 The engine is based on id Software's official
@@ -78,4 +80,3 @@ existing `I_*` boundary can express it. If an engine change is necessary:
 
 This policy is more maintainable than carrying a separate opaque fork or a
 large patch applied during every build.
-
