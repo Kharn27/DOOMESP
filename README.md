@@ -155,6 +155,7 @@ and [Upstream changes](docs/UPSTREAM.md) for the detailed boundaries.
 
 - [Architecture and data flow](docs/ARCHITECTURE.md)
 - [Hardware, pins, memory, and audio](docs/HARDWARE.md)
+- [Porting to another ESP32-S3 board](docs/PORTING.md)
 - [Build and runtime troubleshooting](docs/TROUBLESHOOTING.md)
 - [Upstream source and local engine changes](docs/UPSTREAM.md)
 - [Third-party components and licenses](THIRD_PARTY.md)

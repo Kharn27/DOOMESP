@@ -39,4 +39,6 @@ personnalisée de 4 Mio.
 - `components/doom_music/` : lecteur MUS et émulateurs OPL embarqués.
 
 Consulte [Architecture](../docs/ARCHITECTURE.fr.md) pour le flux complet des
-données et [Matériel](../docs/HARDWARE.fr.md) pour le brochage testé.
+données et [Matériel](../docs/HARDWARE.fr.md) pour le brochage testé. Les
+limites actuelles et la trajectoire prévue vers plusieurs backends de cartes
+sont décrites dans le guide de [Portage](../docs/PORTING.fr.md).

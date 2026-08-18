@@ -35,6 +35,9 @@ physique.
 - Place les services généraux de la carte dans `ESP32/src/platform`.
 - Conserve les broches physiques dans `platform_board.h`.
 - Conserve la géométrie tactile dans `platform_controls.h`.
+- Pour une nouvelle cible matérielle, suis `docs/PORTING.fr.md` : ajoute un
+  environnement de build distinct et sépare le transport matériel du
+  comportement partagé de l'interface.
 - Évite de modifier `linuxdoom-1.10` lorsqu'un backend ESP32 peut porter le
   comportement. Suis `docs/UPSTREAM.fr.md` si un patch moteur est nécessaire.
 - Respecte le style C environnant ; le port utilise une indentation de quatre

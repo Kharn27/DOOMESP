@@ -34,6 +34,8 @@ changes should also be flashed and tested on the physical board.
 - Put general board services under `ESP32/src/platform`.
 - Keep physical pin assignments in `platform_board.h`.
 - Keep touch geometry in `platform_controls.h`.
+- For a new hardware target, follow `docs/PORTING.md`: add a distinct build
+  environment and keep device transport separate from shared UI behavior.
 - Avoid editing `linuxdoom-1.10` when the behavior can live in an ESP32
   backend. Follow `docs/UPSTREAM.md` when an engine patch is necessary.
 - Match the surrounding C style; port code uses four-space indentation.

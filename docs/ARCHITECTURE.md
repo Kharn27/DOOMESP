@@ -125,6 +125,21 @@ To support another AXS15231B board revision:
    `jc3248w535`.
 5. Document and test flash/PSRAM topology before changing `sdkconfig.defaults`.
 
+This is the current configuration boundary, not yet a complete hardware
+abstraction. `platform_lcd.c` still combines AXS15231B transport with UI
+drawing, and `platform_input.c` still combines controller-specific packet
+decoding with logical control mapping.
+
+The intended evolution is to select one board profile at compile time and to
+give display, touch, storage, and audio their own small hardware backends. The
+touch UI and DOOM-facing `I_*` behavior should remain shared. This separation
+will be introduced incrementally against a real second target so the existing
+JC3248W535 remains a physical regression test and the interfaces reflect
+actual hardware constraints.
+
+See [PORTING.md](PORTING.md) for the current coupling matrix, proposed
+boundaries, migration sequence, and hardware validation checklist.
+
 ## Engine modifications
 
 Some changes must live in LinuxDOOM because no original `I_*` callback exists

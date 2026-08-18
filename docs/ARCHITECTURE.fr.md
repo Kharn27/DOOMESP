@@ -136,6 +136,24 @@ Pour prendre en charge une autre révision de carte AXS15231B :
 5. Documenter et tester la topologie flash/PSRAM avant de modifier
    `sdkconfig.defaults`.
 
+Il s'agit de la frontière de configuration actuelle, pas encore d'une
+abstraction matérielle complète. `platform_lcd.c` mélange encore le transport
+AXS15231B et le dessin de l'interface, tandis que `platform_input.c` regroupe
+le décodage des paquets propres au contrôleur et leur transformation en
+commandes logiques.
+
+L'évolution visée consiste à sélectionner un profil de carte à la compilation
+et à fournir de petits backends matériels distincts pour l'affichage, le
+tactile, le stockage et l'audio. L'interface tactile et le comportement `I_*`
+vu par DOOM doivent rester partagés. Cette séparation sera introduite
+progressivement à partir d'une vraie deuxième cible : la JC3248W535 restera
+ainsi un test physique de non-régression et les interfaces correspondront à
+des contraintes matérielles réelles.
+
+Consulte [PORTING.fr.md](PORTING.fr.md) pour la matrice des couplages actuels,
+les frontières proposées, l'ordre de migration et la checklist de validation
+matérielle.
+
 ## Modifications du moteur
 
 Certaines modifications doivent rester dans LinuxDOOM, car aucun callback

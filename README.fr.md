@@ -111,6 +111,7 @@ Sous Windows, utiliser le port `COM` correspondant.
 
 - [Architecture du port](docs/ARCHITECTURE.fr.md)
 - [Matériel et brochage](docs/HARDWARE.fr.md)
+- [Portage vers une autre carte ESP32-S3](docs/PORTING.fr.md)
 - [Dépannage](docs/TROUBLESHOOTING.fr.md)
 - [Différences avec LinuxDOOM](docs/UPSTREAM.fr.md)
 - [Licences tierces](THIRD_PARTY.fr.md)

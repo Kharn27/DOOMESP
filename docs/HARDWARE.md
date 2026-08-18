@@ -19,6 +19,10 @@ Do not rely only on the screen size or product photo. Other boards using an
 AXS15231B can route the same devices to different GPIOs and may require a
 different panel initialization sequence.
 
+This page documents the tested target, not a generic ESP32-S3 wiring recipe.
+See [the porting guide](PORTING.md) before adapting the firmware to another
+board or display.
+
 <p align="center">
   <img src="media/board-back.jpg" width="420" alt="Back of the tested GUITION board showing the JC3248W535 marking, ESP32-S3 module, and microSD socket">
 </p>

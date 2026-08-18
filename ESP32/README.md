@@ -37,4 +37,6 @@ partition.
 - `components/doom_music/`: vendored MUS parser and OPL emulators.
 
 See [Architecture](../docs/ARCHITECTURE.md) for the full data flow and
-[Hardware](../docs/HARDWARE.md) for the tested pin map.
+[Hardware](../docs/HARDWARE.md) for the tested pin map. The current limits and
+planned path toward multiple board backends are documented in
+[Porting](../docs/PORTING.md).

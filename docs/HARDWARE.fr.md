@@ -19,6 +19,10 @@ Ne te fie pas seulement à la taille de l'écran ou à la photo du produit.
 D'autres cartes équipées d'un AXS15231B peuvent relier les mêmes composants à
 des GPIO différents et nécessiter une autre séquence d'initialisation.
 
+Cette page décrit la cible testée et non un câblage ESP32-S3 générique.
+Consulte le [guide de portage](PORTING.fr.md) avant d'adapter le firmware à une
+autre carte ou à un autre écran.
+
 <p align="center">
   <img src="media/board-back.jpg" width="420" alt="Dos de la carte GUITION testée montrant la référence JC3248W535, le module ESP32-S3 et le lecteur microSD">
 </p>
