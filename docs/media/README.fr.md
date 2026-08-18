@@ -14,10 +14,15 @@ pas des données de jeu nécessaires au firmware.
 - `board-back.jpg` identifie le PCB testé et ses principaux composants.
 - `audio-wiring.jpg` documente le branchement amplifié du haut-parleur employé
   pendant le développement.
-- `gameplay-demo.mp4` montre une séquence de jeu prolongée avec l'interface
-  portrait complète.
-- `touch-controls.mp4` montre le lancement d'une partie, les commandes
-  tactiles simultanées et le sélecteur d'armes alimenté par le WAD.
+- [`gameplay-demo.mp4`](https://cdn.jsdelivr.net/gh/Kharn27/DOOMESP@main/docs/media/gameplay-demo.mp4)
+  montre une séquence de jeu prolongée avec l'interface portrait complète.
+- [`touch-controls.mp4`](https://cdn.jsdelivr.net/gh/Kharn27/DOOMESP@main/docs/media/touch-controls.mp4)
+  montre le lancement d'une partie, les commandes tactiles simultanées et le
+  sélecteur d'armes alimenté par le WAD.
+
+Les vidéos restent versionnées dans ce dossier. Les liens de lecture passent
+par jsDelivr, car le visualiseur de sources de GitHub ne prévisualise pas les
+MP4 de cette taille.
 
 Elles sont séparées du code source distribué sous GPL-2.0. Les visuels, noms
 et marques de DOOM restent la propriété de leurs détenteurs respectifs.

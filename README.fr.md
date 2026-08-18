@@ -20,8 +20,10 @@ devient une manette tactile multipoint.
   <img src="docs/media/cheat-selector.jpg" width="300" alt="Sélecteur tactile des cheats utilisant les sprites du WAD">
 </p>
 
-Voir la [démonstration du gameplay](docs/media/gameplay-demo.mp4) et la vidéo
-des [commandes tactiles et du sélecteur d'armes](docs/media/touch-controls.mp4).
+Voir la
+[démonstration du gameplay](https://cdn.jsdelivr.net/gh/Kharn27/DOOMESP@main/docs/media/gameplay-demo.mp4)
+et la vidéo des
+[commandes tactiles et du sélecteur d'armes](https://cdn.jsdelivr.net/gh/Kharn27/DOOMESP@main/docs/media/touch-controls.mp4).
 
 ## Fonctionnalités
 

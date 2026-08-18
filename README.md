@@ -26,8 +26,10 @@ touch interface.
 </p>
 
 > The footage shows an active development build; small details of the touch
-> layout may continue to evolve. Watch the [gameplay demo](docs/media/gameplay-demo.mp4)
-> and the [touch controls and weapon selector](docs/media/touch-controls.mp4).
+> layout may continue to evolve. Watch the
+> [gameplay demo](https://cdn.jsdelivr.net/gh/Kharn27/DOOMESP@main/docs/media/gameplay-demo.mp4)
+> and the
+> [touch controls and weapon selector](https://cdn.jsdelivr.net/gh/Kharn27/DOOMESP@main/docs/media/touch-controls.mp4).
 
 ## What works
 
